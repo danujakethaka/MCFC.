@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Muscle Choice Fitness Center</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --accent-color: #a855f7;
+            --text-color: #ffffff;
+            --text-muted: #aaaaaa;
+            --border-color: #333333;
+            --button-bg: #ffffff;
+            --button-text: #000000;
+            --danger-color: #991b1b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); padding-bottom: 30px; }
+        
+        /* Login Page Styling */
+        #login-page {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100vh; background-color: var(--bg-color);
+        }
+        .login-container {
+            background-color: var(--card-bg); padding: 40px; border-radius: 12px;
+            width: 100%; max-width: 400px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); text-align: center;
+        }
+        .gym-title { color: var(--accent-color); font-size: 24px; font-weight: bold; margin-bottom: 25px; }
+        .form-group { margin-bottom: 20px; text-align: left; position: relative; }
+        .form-group label { display: block; margin-bottom: 8px; color: var(--text-muted); font-size: 14px; }
+        .form-control {
+            width: 100%; padding: 12px; background-color: #2a2a2a; border: 1px solid var(--border-color);
+            border-radius: 6px; color: white; font-size: 16px;
+        }
+        
+        /* Remember Me Styling */
+        .remember-me-container {
+            display: flex; align-items: center; gap: 8px; margin-bottom: 20px; text-align: left; cursor: pointer; user-select: none;
+        }
+        .remember-me-container input {
+            accent-color: var(--accent-color); width: 16px; height: 16px; cursor: pointer;
+        }
+        .remember-me-container label {
+            color: var(--text-muted); font-size: 14px; cursor: pointer;
+        }
+
+        .btn-block {
+            width: 100%; padding: 12px; background-color: var(--button-bg); color: var(--button-text);
+            border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px;
+        }
+
+        /* Main System Styling */
+        #main-system { display: none; }
+        header {
+            background-color: var(--card-bg); padding: 15px 20px; display: flex;
+            justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color);
+        }
+        .nav-links button {
+            background: none; border: none; color: var(--text-muted); font-size: 16px;
+            margin-left: 20px; cursor: pointer; padding: 5px 10px;
+        }
+        .nav-links button.active { color: var(--accent-color); border-bottom: 2px solid var(--accent-color); font-weight: bold; }
+        .logout-btn { color: #ff4d4d !important; }
+
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        .view-section { display: none; }
+        .view-section.active { display: block; }
+
+        /* Dashboard Grid */
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-top: 20px; }
+        .dash-card { background-color: var(--card-bg); padding: 25px; border-radius: 10px; border: 1px solid var(--border-color); }
+        .dash-card h3 { font-size: 15px; color: var(--text-muted); font-weight: 500; margin-bottom: 15px; }
+        .dash-card .val { font-size: 32px; font-weight: bold; }
+
+        /* Common Page UI */
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .btn-primary { background-color: #222; color: white; border: 1px solid var(--border-color); padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+        .btn-primary:hover { background-color: #333; }
+        
+        /* Search Filters */
+        .search-box { background-color: var(--card-bg); padding: 20px; border-radius: 10px; margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end; }
+        .search-box .filter-group { display: flex; flex-direction: column; gap: 8px; min-width: 200px; flex: 1; }
+        .search-box .filter-group label { font-size: 14px; color: var(--text-muted); }
+        .search-box input, .search-box select { padding: 10px; background-color: #2a2a2a; border: 1px solid var(--border-color); color: white; border-radius: 6px; width: 100%; }
+        
+        .btn-filter { background-color: #2a2a2a; color: white; border: 1px solid var(--border-color); padding: 10px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; height: 40px; }
+        .btn-filter:hover { background-color: #3a3a3a; }
+        .btn-danger-block { width: 100%; padding: 12px; background-color: var(--danger-color); color: white; border: none; border-radius: 6px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 10px; text-align: center; }
+        .btn-danger-block:hover { background-color: #b91c1c; }
+
+        /* Data Display Cards */
+        .data-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; margin-top: 20px; }
+        .data-card { background-color: var(--card-bg); padding: 20px; border-radius: 10px; border: 1px solid var(--border-color); display: flex; gap: 15px; align-items: flex-start; }
+        .data-card img { width: 90px; height: 115px; border-radius: 6px; object-fit: cover; background-color: #333; border: 1px solid var(--border-color); }
+        .card-details { flex: 1; }
+        
+        .card-details h4.purple-title { font-size: 18px; margin-bottom: 8px; color: #c084fc; font-weight: bold; }
+        .data-card p { font-size: 14px; margin-bottom: 5px; color: #ffffff; }
+        .data-card p b { font-weight: 600; color: #ffffff; }
+        .data-card span { color: var(--text-muted); font-weight: normal; }
+        
+        .card-actions { display: flex; gap: 10px; margin-top: 12px; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; font-weight: bold; border-radius: 4px; cursor: pointer; border: none; }
+        .btn-edit { background-color: #333; color: white; border: 1px solid #555; }
+        .btn-delete { background-color: var(--danger-color); color: white; }
+
+        /* Modal Popup */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 100; }
+        .modal-content { background-color: var(--card-bg); padding: 30px; border-radius: 10px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .close-modal { font-size: 24px; cursor: pointer; color: var(--text-muted); }
+
+        /* Live Search Dropdown Suggestions */
+        .search-results-box {
+            position: absolute; top: 100%; left: 0; right: 0; background: #2a2a2a; 
+            border: 1px solid var(--border-color); border-radius: 0 0 6px 6px; max-height: 150px; 
+            overflow-y: auto; z-index: 10; display: none;
+        }
+        .search-item { padding: 10px; cursor: pointer; font-size: 14px; border-bottom: 1px solid #333; }
+        .search-item:hover { background: var(--accent-color); color: white; }
+    </style>
+</head>
+<body>
+
+    <!-- 1. LOGIN PAGE -->
+    <div id="login-page">
+        <div class="login-container">
+            <div class="gym-title">Muscle Choice Fitness Center</div>
+            <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 14px;">Staff Login Only</p>
+            <div style="color: red; font-size: 14px; margin-bottom: 15px; display: none;" id="login-error">Invalid Email or Password!</div>
+            
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="login-email" class="form-control" placeholder="example@mcfc.com" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="login-pass" class="form-control" placeholder="••••••••" required>
+            </div>
+
+            <!-- Remember Me Checkbox -->
+            <div class="remember-me-container">
+                <input type="checkbox" id="login-remember">
+                <label for="login-remember">Remember Me</label>
+            </div>
+
+            <button class="btn-block" onclick="handleLogin()">Login</button>
+        </div>
+    </div>
+
+    <!-- 2. MAIN SYSTEM CONTENT -->
+    <div id="main-system">
+        <header>
+            <div style="font-weight: bold; font-size: 18px; color: var(--accent-color);">Muscle Choice Fitness Center</div>
+            <div class="nav-links">
+                <button onclick="switchView('dashboard')" id="nav-dashboard" class="active">Dashboard</button>
+                <button onclick="switchView('customers')" id="nav-customers">Customers</button>
+                <button onclick="switchView('memberships')" id="nav-memberships">Memberships</button>
+                <button onclick="handleLogout()" class="logout-btn">Logout</button>
+            </div>
+        </header>
+
+        <div class="container">
+            
+            <!-- ====== DASHBOARD VIEW ====== -->
+            <section id="view-dashboard" class="view-section active">
+                <h2>Dashboard Overview</h2>
+                <div class="dashboard-grid">
+                    <div class="dash-card"><h3>Today's New Customers</h3><div class="val" id="dash-today-cust">0</div></div>
+                    <div class="dash-card"><h3>Today's New Memberships</h3><div class="val" id="dash-today-mem">0</div></div>
+                    <div class="dash-card"><h3>Today's Revenue</h3><div class="val">LKR <span id="dash-today-rev">0</span></div></div>
+                    <div class="dash-card"><h3>This Month Customers</h3><div class="val" id="dash-month-cust">0</div></div>
+                    <div class="dash-card"><h3>This Month Memberships</h3><div class="val" id="dash-month-mem">0</div></div>
+                    <div class="dash-card"><h3>This Month Total Revenue</h3><div class="val">LKR <span id="dash-month-rev">0</span></div></div>
+                    <div class="dash-card"><h3>Total Customers</h3><div class="val" id="dash-total-cust">0</div></div>
+                    <div class="dash-card"><h3>Total Memberships</h3><div class="val" id="dash-total-mem">0</div></div>
+                </div>
+            </section>
+
+            <!-- ====== CUSTOMERS VIEW ====== -->
+            <section id="view-customers" class="view-section">
+                <div class="page-header">
+                    <h2>Customers Management</h2>
+                    <button class="btn-primary" onclick="openCustomerModal()">+ Add a Customer</button>
+                </div>
+                <div class="search-box">
+                    <div class="filter-group"><input type="text" id="search-cust-name" placeholder="Search by name..." oninput="filterCustomers()"></div>
+                    <div class="filter-group"><input type="text" id="search-cust-phone" placeholder="Search by phone..." oninput="filterCustomers()"></div>
+                </div>
+                <div class="data-list" id="customer-list-container">
+                    <!-- Dynamic customer list cards -->
+                </div>
+            </section>
+
+            <!-- ====== MEMBERSHIPS VIEW ====== -->
+            <section id="view-memberships" class="view-section">
+                <div class="page-header">
+                    <h2>Memberships</h2>
+                    <button class="btn-primary" onclick="openMembershipModal()">Add a Membership</button>
+                </div>
+                
+                <div class="search-box" style="flex-direction: column; align-items: stretch;">
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap; width: 100%;">
+                        <div class="filter-group">
+                            <label>Start Date :</label>
+                            <input type="date" id="filter-mem-start">
+                        </div>
+                        <div class="filter-group">
+                            <label>End Date :</label>
+                            <input type="date" id="filter-mem-end">
+                        </div>
+                    </div>
+                    <button class="btn-filter" style="margin-top: 10px;" onclick="filterMembershipsByDate()">Filter</button>
+                    <button class="btn-danger-block" onclick="filterExpiredMemberships()">All Expired Memberships</button>
+                </div>
+
+                <div class="data-list" id="membership-list-container">
+                    <!-- Dynamic membership list cards -->
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <!-- ====== CUSTOMER ADD / EDIT MODAL ====== -->
+    <div id="customerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="cust-modal-title">Add Customer</h3>
+                <span class="close-modal" onclick="closeModal('customerModal')">&times;</span>
+            </div>
+            <form id="customerForm" onsubmit="saveCustomer(event)">
+                <input type="hidden" id="cust-edit-id">
+                <div class="form-group"><label>First Name *</label><input type="text" id="cust-fname" class="form-control" required></div>
+                <div class="form-group"><label>Last Name *</label><input type="text" id="cust-lname" class="form-control" required></div>
+                <div class="form-group"><label>Date of Birth</label><input type="date" id="cust-dob" class="form-control"></div>
+                <div class="form-group"><label>Gender</label><select id="cust-gender" class="form-control"><option>Male</option><option>Female</option></select></div>
+                <div class="form-group"><label>Email</label><input type="email" id="cust-email" class="form-control"></div>
+                <div class="form-group"><label>Phone *</label><input type="text" id="cust-phone" class="form-control" required></div>
+                <div class="form-group"><label>WhatsApp</label><input type="text" id="cust-whatsapp" class="form-control"></div>
+                
+                <div class="form-group">
+                    <label>Upload Photo</label>
+                    <input type="file" id="cust-photo" class="form-control" accept="image/*" onchange="previewImage(this)">
+                    <input type="hidden" id="cust-photo-base64">
+                </div>
+                
+                <div class="form-group"><label>Occupation</label><input type="text" id="cust-occupation" class="form-control"></div>
+                <div class="form-group"><label>City</label><input type="text" id="cust-city" class="form-control"></div>
+                <button type="submit" class="btn-block" id="cust-btn-text">Save Customer</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ====== MEMBERSHIP ADD / EDIT MODAL ====== -->
+    <div id="membershipModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="mem-modal-title">Add Membership</h3>
+                <span class="close-modal" onclick="closeModal('membershipModal')">&times;</span>
+            </div>
+            <form id="membershipForm" onsubmit="saveMembership(event)">
+                <input type="hidden" id="mem-edit-id">
+                
+                <div class="form-group" id="mem-search-group">
+                    <label>Search and Select Customer *</label>
+                    <input type="text" id="mem-cust-search-input" class="form-control" placeholder="Type customer name or phone..." oninput="searchCustomerForMembership(this.value)" autocomplete="off">
+                    <input type="hidden" id="mem-selected-cust-id">
+                    <div id="search-suggestions" class="search-results-box"></div>
+                </div>
+
+                <!-- Display read-only name when editing membership -->
+                <div class="form-group" id="mem-edit-name-display" style="display: none;">
+                    <label>Customer Name</label>
+                    <input type="text" id="mem-readonly-name" class="form-control" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label>Membership Type *</label>
+                    <select id="mem-type" class="form-control" required onchange="calculateEndDate()">
+                        <option value="">Select a membership type</option>
+                        <option value="Month">Month</option>
+                        <option value="3 months">3 months</option>
+                        <option value="6 months">6 months</option>
+                        <option value="Annual">Annual</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Start Date *</label><input type="date" id="mem-start-date" class="form-control" required onchange="calculateEndDate()"></div>
+                <div class="form-group"><label>End Date (Auto Generated)</label><input type="date" id="mem-end-date" class="form-control" readonly></div>
+                <div class="form-group"><label>Amount (LKR) *</label><input type="number" id="mem-amount" class="form-control" required></div>
+                <div class="form-group">
+                    <label>Payment Type *</label>
+                    <select id="mem-payment" class="form-control" required>
+                        <option value="Cash">Cash</option>
+                        <option value="Card">Card</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Notes (Optional)</label><textarea id="mem-notes" class="form-control" rows="2"></textarea></div>
+                <button type="submit" class="btn-block" id="mem-btn-text">Save Membership</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ====== LOGIC AND STORAGE SCRIPT ====== -->
+    <script>
+        let customers = JSON.parse(localStorage.getItem('mcfc_customers')) || [];
+        let memberships = JSON.parse(localStorage.getItem('mcfc_memberships')) || [];
+
+        window.onload = function() {
+            const rememberMe = localStorage.getItem('mcfc_remember_me');
+            if (rememberMe === 'true') {
+                document.getElementById('login-page').style.display = 'none';
+                document.getElementById('main-system').style.display = 'block';
+                initSystem();
+            }
+        };
+
+        // Authentication & Remember Me
+        function handleLogin() {
+            const email = document.getElementById('login-email').value.trim();
+            const pass = document.getElementById('login-pass').value;
+            const isRememberChecked = document.getElementById('login-remember').checked;
+            const errorDiv = document.getElementById('login-error');
+
+            if (["Sanjeewa@mcfc.com", "Nadeera@mcfc.com"].includes(email) && pass === "mcfc@123") {
+                if (isRememberChecked) localStorage.setItem('mcfc_remember_me', 'true');
+                else localStorage.removeItem('mcfc_remember_me');
+                document.getElementById('login-page').style.display = 'none';
+                document.getElementById('main-system').style.display = 'block';
+                initSystem();
+            } else { errorDiv.style.display = 'block'; }
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('mcfc_remember_me');
+            document.getElementById('login-page').style.display = 'flex';
+            document.getElementById('main-system').style.display = 'none';
+            document.getElementById('login-pass').value = '';
+            document.getElementById('login-remember').checked = false;
+        }
+
+        // Navigation
+        function switchView(viewName) {
+            document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.nav-links button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`view-${viewName}`).classList.add('active');
+            document.getElementById(`nav-${viewName}`).classList.add('active');
+            if(viewName === 'dashboard') updateDashboard();
+            if(viewName === 'memberships') renderMemberships(memberships);
+        }
+
+        // Auto End-Date
+        function calculateEndDate() {
+            const startDateVal = document.getElementById('mem-start-date').value;
+            const type = document.getElementById('mem-type').value;
+            const endDateInput = document.getElementById('mem-end-date');
+            if (!startDateVal || !type) return;
+            let startDate = new Date(startDateVal);
+            if (type === "Month") startDate.setMonth(startDate.getMonth() + 1);
+            else if (type === "3 months") startDate.setMonth(startDate.getMonth() + 3);
+            else if (type === "6 months") startDate.setMonth(startDate.getMonth() + 6);
+            else if (type === "Annual") startDate.setFullYear(startDate.getFullYear() + 1);
+            endDateInput.value = startDate.toISOString().split('T')[0];
+        }
+
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { 
+            document.getElementById(id).style.display = 'none'; 
+            if(id === 'customerModal') document.getElementById('customerForm').reset();
+            if(id === 'membershipModal') document.getElementById('membershipForm').reset();
+        }
+
+        function openCustomerModal() {
+            document.getElementById('cust-modal-title').innerText = "Add Customer";
+            document.getElementById('cust-btn-text').innerText = "Save Customer";
+            document.getElementById('cust-edit-id').value = "";
+            openModal('customerModal');
+        }
+
+        function openMembershipModal() {
+            document.getElementById('mem-modal-title').innerText = "Add Membership";
+            document.getElementById('mem-btn-text').innerText = "Save Membership";
+            document.getElementById('mem-edit-id').value = "";
+            document.getElementById('mem-search-group').style.display = "block";
+            document.getElementById('mem-edit-name-display').style.display = "none";
+            document.getElementById('mem-cust-search-input').required = true;
+            openModal('membershipModal');
+        }
+
+        function previewImage(input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) { document.getElementById('cust-photo-base64').value = e.target.result; }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Customer Operations
+        function saveCustomer(e) {
+            e.preventDefault();
+            const editId = document.getElementById('cust-edit-id').value;
+            const photoBase64 = document.getElementById('cust-photo-base64').value;
+
+            const customerData = {
+                fname: document.getElementById('cust-fname').value,
+                lname: document.getElementById('cust-lname').value,
+                dob: document.getElementById('cust-dob').value,
+                gender: document.getElementById('cust-gender').value,
+                email: document.getElementById('cust-email').value,
+                phone: document.getElementById('cust-phone').value,
+                whatsapp: document.getElementById('cust-whatsapp').value,
+                occupation: document.getElementById('cust-occupation').value,
+                city: document.getElementById('cust-city').value,
+            };
+
+            if (editId) {
+                let index = customers.findIndex(c => c.id === editId);
+                customers[index] = { ...customers[index], ...customerData, photo: photoBase64 ? photoBase64 : customers[index].photo };
+                
+                // Update photo and name in existing memberships if changed
+                memberships.forEach(m => {
+                    if(m.customerUniqueId === editId) {
+                        m.customerName = `${customerData.fname} ${customerData.lname}`;
+                        m.customerPhoto = photoBase64 ? photoBase64 : m.customerPhoto;
+                    }
+                });
+                localStorage.setItem('mcfc_memberships', JSON.stringify(memberships));
+            } else {
+                const newCust = {
+                    id: 'CUST-' + Math.floor(1000 + Math.random() * 9000),
+                    ...customerData,
+                    photo: photoBase64 || '',
+                    dateAdded: new Date().toISOString().split('T')[0]
+                };
+                customers.push(newCust);
+            }
+            localStorage.setItem('mcfc_customers', JSON.stringify(customers));
+            closeModal('customerModal');
+            renderCustomers(customers);
+            renderMemberships(memberships);
+        }
+
+        function editCustomer(id) {
+            const c = customers.find(cust => cust.id === id);
+            if (!c) return;
+            document.getElementById('cust-modal-title').innerText = "Edit Customer Details";
+            document.getElementById('cust-btn-text').innerText = "Update Customer";
+            document.getElementById('cust-edit-id').value = c.id;
+            document.getElementById('cust-fname').value = c.fname;
+            document.getElementById('cust-lname').value = c.lname;
+            document.getElementById('cust-dob').value = c.dob;
+            document.getElementById('cust-gender').value = c.gender;
+            document.getElementById('cust-email').value = c.email;
+            document.getElementById('cust-phone').value = c.phone;
+            document.getElementById('cust-whatsapp').value = c.whatsapp;
+            document.getElementById('cust-occupation').value = c.occupation;
+            document.getElementById('cust-city').value = c.city;
+            document.getElementById('cust-photo-base64').value = c.photo || '';
+            openModal('customerModal');
+        }
+
+        function deleteCustomer(id) {
+            if (confirm("Are you sure you want to delete this customer?")) {
+                customers = customers.filter(c => c.id !== id);
+                localStorage.setItem('mcfc_customers', JSON.stringify(customers));
+                renderCustomers(customers);
+            }
+        }
+
+        function renderCustomers(list) {
+            const container = document.getElementById('customer-list-container');
+            container.innerHTML = '';
+            list.forEach(c => {
+                const imgTag = c.photo ? `<img src="${c.photo}">` : `<img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='gray'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>">`;
+                container.innerHTML += `
+                    <div class="data-card">
+                        ${imgTag}
+                        <div class="card-details">
+                            <h4>${c.fname} ${c.lname}</h4>
+                            <p><span>ID:</span> ${c.id} | <span>Added:</span> ${c.dateAdded}</p>
+                            <p><span>Phone:</span> ${c.phone}</p>
+                            <p><span>WhatsApp:</span> ${c.whatsapp || 'N/A'}</p>
+                            <p><span>Email:</span> ${c.email || 'N/A'}</p>
+                            <p><span>City:</span> ${c.city || 'N/A'}</p>
+                            <div class="card-actions">
+                                <button class="btn-sm btn-edit" onclick="editCustomer('${c.id}')">Edit</button>
+                                <button class="btn-sm btn-delete" onclick="deleteCustomer('${c.id}')">Delete</button>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function filterCustomers() {
+            const nameQ = document.getElementById('search-cust-name').value.toLowerCase();
+            const phoneQ = document.getElementById('search-cust-phone').value;
+            const filtered = customers.filter(c => (`${c.fname} ${c.lname}`.toLowerCase().includes(nameQ)) && (c.phone.includes(phoneQ)));
+            renderCustomers(filtered);
+        }
+
+        // Membership Search Logic
+        function searchCustomerForMembership(val) {
+            const box = document.getElementById('search-suggestions');
+            if (val.length < 1) { box.style.display = 'none'; return; }
+            const matches = customers.filter(c => `${c.fname} ${c.lname}`.toLowerCase().includes(val.toLowerCase()) || c.phone.includes(val));
+            if(matches.length > 0) {
+                box.innerHTML = '';
+                matches.forEach(c => {
+                    box.innerHTML += `<div class="search-item" onclick="selectCustomerForMembership('${c.id}', '${c.fname} ${c.lname} (${c.phone})')">${c.fname} ${c.lname} - ${c.phone}</div>`;
+                });
+                box.style.display = 'block';
+            } else { box.style.display = 'none'; }
+        }
+
+        function selectCustomerForMembership(id, text) {
+            document.getElementById('mem-cust-search-input').value = text;
+            document.getElementById('mem-selected-cust-id').value = id;
+            document.getElementById('search-suggestions').style.display = 'none';
+        }
+
+        // Membership Operations (Add / Edit / Delete)
+        function saveMembership(e) {
+            e.preventDefault();
+            const editId = document.getElementById('mem-edit-id').value;
+
+            if (editId) {
+                let index = memberships.findIndex(m => m.id == editId);
+                if (index !== -1) {
+                    memberships[index].type = document.getElementById('mem-type').value;
+                    memberships[index].startDate = document.getElementById('mem-start-date').value;
+                    memberships[index].endDate = document.getElementById('mem-end-date').value;
+                    memberships[index].amount = parseFloat(document.getElementById('mem-amount').value);
+                    memberships[index].payment = document.getElementById('mem-payment').value;
+                    memberships[index].notes = document.getElementById('mem-notes').value;
+                }
+            } else {
+                const custId = document.getElementById('mem-selected-cust-id').value;
+                const customer = customers.find(c => c.id === custId);
+                if(!customer) { alert("Please select a valid customer from search!"); return; }
+
+                const newMem = {
+                    id: 'MEM-' + Math.floor(1000 + Math.random() * 9000),
+                    customerUniqueId: customer.id,
+                    customerName: `${customer.fname} ${customer.lname}`,
+                    customerPhoto: customer.photo || '',
+                    type: document.getElementById('mem-type').value,
+                    startDate: document.getElementById('mem-start-date').value,
+                    endDate: document.getElementById('mem-end-date').value,
+                    amount: parseFloat(document.getElementById('mem-amount').value),
+                    payment: document.getElementById('mem-payment').value,
+                    notes: document.getElementById('mem-notes').value,
+                    dateAdded: new Date().toISOString().split('T')[0]
+                };
+                memberships.push(newMem);
+            }
+
+            localStorage.setItem('mcfc_memberships', JSON.stringify(memberships));
+            closeModal('membershipModal');
+            renderMemberships(memberships);
+            updateDashboard();
+        }
+
+        function editMembership(id) {
+            const m = memberships.find(mem => mem.id == id);
+            if (!m) return;
+
+            document.getElementById('mem-modal-title').innerText = "Edit Membership Details";
+            document.getElementById('mem-btn-text').innerText = "Update Membership";
+            document.getElementById('mem-edit-id').value = m.id;
+            
+            document.getElementById('mem-search-group').style.display = "none";
+            document.getElementById('mem-cust-search-input').required = false;
+            document.getElementById('mem-edit-name-display').style.display = "block";
+            document.getElementById('mem-readonly-name').value = m.customerName;
+
+            document.getElementById('mem-type').value = m.type;
+            document.getElementById('mem-start-date').value = m.startDate;
+            document.getElementById('mem-end-date').value = m.endDate;
+            document.getElementById('mem-amount').value = m.amount;
+            document.getElementById('mem-payment').value = m.payment || 'Cash';
+            document.getElementById('mem-notes').value = m.notes || '';
+
+            openModal('membershipModal');
+        }
+
+        function deleteMembership(id) {
+            if (confirm("Are you sure you want to delete this membership?")) {
+                memberships = memberships.filter(m => m.id != id);
+                localStorage.setItem('mcfc_memberships', JSON.stringify(memberships));
+                renderMemberships(memberships);
+                updateDashboard();
+            }
+        }
+
+        function renderMemberships(list) {
+            const container = document.getElementById('membership-list-container');
+            container.innerHTML = '';
+            list.forEach(m => {
+                const imgTag = m.customerPhoto ? `<img src="${m.customerPhoto}">` : `<img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='gray'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>">`;
+                container.innerHTML += `
+                    <div class="data-card">
+                        ${imgTag}
+                        <div class="card-details">
+                            <h4 class="purple-title">${m.customerName}</h4>
+                            <p><b>Membership ID:</b> ${m.id}</p>
+                            <p><b>Membership Type:</b> ${m.type}</p>
+                            <p><b>Start Date:</b> ${m.startDate}</p>
+                            <p><b>End Date:</b> ${m.endDate}</p>
+                            <div class="card-actions">
+                                <button class="btn-sm btn-edit" onclick="editMembership('${m.id}')">Edit</button>
+                                <button class="btn-sm btn-delete" onclick="deleteMembership('${m.id}')">Delete</button>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function filterMembershipsByDate() {
+            const startVal = document.getElementById('filter-mem-start').value;
+            const endVal = document.getElementById('filter-mem-end').value;
+            let filtered = memberships;
+            if (startVal) filtered = filtered.filter(m => m.startDate >= startVal);
+            if (endVal) filtered = filtered.filter(m => m.endDate <= endVal);
+            renderMemberships(filtered);
+        }
+
+        function filterExpiredMemberships() {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const expired = memberships.filter(m => m.endDate < todayStr);
+            renderMemberships(expired);
+        }
+
+        // Dashboard Live Updates
+        function updateDashboard() {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const thisMonthStr = todayStr.substring(0, 7);
+
+            const todayCust = customers.filter(c => c.dateAdded === todayStr).length;
+            const todayMems = memberships.filter(m => m.dateAdded === todayStr);
+            const todayRev = todayMems.reduce((sum, m) => sum + m.amount, 0);
+
+            const monthCust = customers.filter(c => c.dateAdded.startsWith(thisMonthStr)).length;
+            const monthMems = memberships.filter(m => m.dateAdded.startsWith(thisMonthStr));
+            const monthRev = monthMems.reduce((sum, m) => sum + m.amount, 0);
+
+            document.getElementById('dash-today-cust').innerText = todayCust;
+            document.getElementById('dash-today-mem').innerText = todayMems.length;
+            document.getElementById('dash-today-rev').innerText = todayRev.toLocaleString();
+            
+            document.getElementById('dash-month-cust').innerText = monthCust;
+            document.getElementById('dash-month-mem').innerText = monthMems.length;
+            document.getElementById('dash-month-rev').innerText = monthRev.toLocaleString();
+
+            document.getElementById('dash-total-cust').innerText = customers.length;
+            document.getElementById('dash-total-mem').innerText = memberships.length;
+        }
+
+        function initSystem() {
+            renderCustomers(customers);
+            renderMemberships(memberships);
+            updateDashboard();
+        }
+    </script>
+</body>
+</html>
