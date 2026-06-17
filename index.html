@@ -148,6 +148,14 @@
             </div>
 
             <button class="btn-block" onclick="handleLogin()">Login</button>
+
+            <!-- Login Details Displayed for Convenience -->
+            <div style="margin-top: 25px; padding-top: 15px; border-top: 1px solid #333; text-align: left; color: var(--text-muted); font-size: 12px;">
+                <p style="font-weight: bold; margin-bottom: 5px; color: var(--accent-color);">Valid Logins:</p>
+                <p>1. Sanjeewa@mcfc.com</p>
+                <p>2. Nadeera@mcfc.com</p>
+                <p style="margin-top: 5px;"><b>Password:</b> mcfc@123</p>
+            </div>
         </div>
     </div>
 
@@ -217,6 +225,7 @@
         </div>
     </div>
 
+    <!-- Customer Modal -->
     <div id="customerModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -244,6 +253,7 @@
         </div>
     </div>
 
+    <!-- Membership Modal -->
     <div id="membershipModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -292,6 +302,7 @@
     </div>
 
     <script>
+        // Load data or initialize empty arrays
         let customers = JSON.parse(localStorage.getItem('mcfc_customers')) || [];
         let memberships = JSON.parse(localStorage.getItem('mcfc_memberships')) || [];
 
@@ -310,19 +321,27 @@
             renderMemberships(memberships);
         }
 
+        // --- FIXED LOGIN FUNCTION ---
         function handleLogin() {
             const email = document.getElementById('login-email').value.trim();
             const pass = document.getElementById('login-pass').value;
             const isRememberChecked = document.getElementById('login-remember').checked;
             const errorDiv = document.getElementById('login-error');
 
+            // Checking the valid usernames and passwords
             if (["Sanjeewa@mcfc.com", "Nadeera@mcfc.com"].includes(email) && pass === "mcfc@123") {
-                if (isRememberChecked) localStorage.setItem('mcfc_remember_me', 'true');
-                else localStorage.removeItem('mcfc_remember_me');
+                errorDiv.style.display = 'none';
+                if (isRememberChecked) {
+                    localStorage.setItem('mcfc_remember_me', 'true');
+                } else {
+                    localStorage.removeItem('mcfc_remember_me');
+                }
                 document.getElementById('login-page').style.display = 'none';
                 document.getElementById('main-system').style.display = 'block';
                 initSystem();
-            } else { errorDiv.style.display = 'block'; }
+            } else { 
+                errorDiv.style.display = 'block'; 
+            }
         }
 
         function handleLogout() {
@@ -338,6 +357,7 @@
             document.querySelectorAll('.nav-links button').forEach(btn => btn.classList.remove('active'));
             document.getElementById(`view-${viewName}`).classList.add('active');
             document.getElementById(`nav-${viewName}`).classList.add('active');
+            
             if(viewName === 'dashboard') updateDashboard();
             if(viewName === 'memberships') renderMemberships(memberships);
             if(viewName === 'customers') renderCustomers(customers);
@@ -348,18 +368,60 @@
             const type = document.getElementById('mem-type').value;
             const endDateInput = document.getElementById('mem-end-date');
             if (!startDateVal || !type) return;
+            
             let startDate = new Date(startDateVal);
             if (type === "Month") startDate.setMonth(startDate.getMonth() + 1);
             else if (type === "3 months") startDate.setMonth(startDate.getMonth() + 3);
             else if (type === "6 months") startDate.setMonth(startDate.getMonth() + 6);
             else if (type === "Annual") startDate.setFullYear(startDate.getFullYear() + 1);
+            
             endDateInput.value = startDate.toISOString().split('T')[0];
         }
 
+        // --- MODAL FUNCTIONS FIXED & COMPLETED ---
+        function openCustomerModal() {
+            document.getElementById('cust-modal-title').innerText = "Add Customer";
+            document.getElementById('cust-btn-text').innerText = "Save Customer";
+            document.getElementById('cust-edit-id').value = "";
+            document.getElementById('customerForm').reset();
+            openModal('customerModal');
+        }
+
+        function openMembershipModal() {
+            document.getElementById('mem-modal-title').innerText = "Add Membership";
+            document.getElementById('mem-btn-text').innerText = "Save Membership";
+            document.getElementById('mem-edit-id').value = "";
+            document.getElementById('mem-search-group').style.display = "block";
+            document.getElementById('mem-edit-name-display').style.display = "none";
+            document.getElementById('membershipForm').reset();
+            openModal('membershipModal');
+        }
+
         function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        
         function closeModal(id) { 
             document.getElementById(id).style.display = 'none'; 
             if(id === 'customerModal') document.getElementById('customerForm').reset();
             if(id === 'membershipModal') {
                 document.getElementById('membershipForm').reset();
-                document.getElementById('search-suggestions').style.display =
+                document.getElementById('search-suggestions').style.display = 'none';
+            }
+        }
+
+        // Placeholder UI Render functions to keep code working without errors
+        function updateDashboard() {
+            document.getElementById('dash-total-cust').innerText = customers.length;
+            document.getElementById('dash-total-mem').innerText = memberships.length;
+        }
+        function renderCustomers(data) { document.getElementById('customer-list-container').innerHTML = `<p style="color:var(--text-muted)">Total Customers Registered: ${data.length}</p>`; }
+        function renderMemberships(data) { document.getElementById('membership-list-container').innerHTML = `<p style="color:var(--text-muted)">Total Memberships Registered: ${data.length}</p>`; }
+        function filterCustomers() {}
+        function filterMembershipsByDate() {}
+        function filterExpiredMemberships() {}
+        function searchCustomerForMembership(val) {}
+        function previewImage(input) {}
+        function saveCustomer(e) { e.preventDefault(); closeModal('customerModal'); }
+        function saveMembership(e) { e.preventDefault(); closeModal('membershipModal'); }
+    </script>
+</body>
+</html>
