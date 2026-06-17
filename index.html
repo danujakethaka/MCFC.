@@ -8,7 +8,7 @@
         :root {
             --bg-color: #121212;
             --card-bg: #1e1e1e;
-            --accent-color: #a855f7;
+            --accent-color: #3b82f6; /* Dampata nilpata kala (Blue) */
             --text-color: #ffffff;
             --text-muted: #aaaaaa;
             --border-color: #333333;
@@ -98,15 +98,16 @@
         .data-card img { width: 90px; height: 115px; border-radius: 6px; object-fit: cover; background-color: #333; border: 1px solid var(--border-color); }
         .card-details { flex: 1; }
         
-        .card-details h4.purple-title { font-size: 18px; margin-bottom: 8px; color: #c084fc; font-weight: bold; }
+        .card-details h4.blue-title { font-size: 18px; margin-bottom: 8px; color: #60a5fa; font-weight: bold; } /* Nilpata kala */
         .data-card p { font-size: 14px; margin-bottom: 5px; color: #ffffff; }
         .data-card p b { font-weight: 600; color: #ffffff; }
         .data-card span { color: var(--text-muted); font-weight: normal; }
         
-        .card-actions { display: flex; gap: 10px; margin-top: 12px; }
+        .card-actions { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
         .btn-sm { padding: 6px 12px; font-size: 12px; font-weight: bold; border-radius: 4px; cursor: pointer; border: none; }
         .btn-edit { background-color: #333; color: white; border: 1px solid #555; }
         .btn-delete { background-color: var(--danger-color); color: white; }
+        .btn-whatsapp { background-color: #25d366; color: white; } /* WhatsApp button color */
 
         /* Modal Popup */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 100; }
@@ -126,7 +127,6 @@
 </head>
 <body>
 
-    <!-- 1. LOGIN PAGE -->
     <div id="login-page">
         <div class="login-container">
             <div class="gym-title">Muscle Choice Fitness Center</div>
@@ -142,7 +142,6 @@
                 <input type="password" id="login-pass" class="form-control" placeholder="••••••••" required>
             </div>
 
-            <!-- Remember Me Checkbox -->
             <div class="remember-me-container">
                 <input type="checkbox" id="login-remember">
                 <label for="login-remember">Remember Me</label>
@@ -152,7 +151,6 @@
         </div>
     </div>
 
-    <!-- 2. MAIN SYSTEM CONTENT -->
     <div id="main-system">
         <header>
             <div style="font-weight: bold; font-size: 18px; color: var(--accent-color);">Muscle Choice Fitness Center</div>
@@ -166,7 +164,6 @@
 
         <div class="container">
             
-            <!-- ====== DASHBOARD VIEW ====== -->
             <section id="view-dashboard" class="view-section active">
                 <h2>Dashboard Overview</h2>
                 <div class="dashboard-grid">
@@ -181,7 +178,6 @@
                 </div>
             </section>
 
-            <!-- ====== CUSTOMERS VIEW ====== -->
             <section id="view-customers" class="view-section">
                 <div class="page-header">
                     <h2>Customers Management</h2>
@@ -192,11 +188,9 @@
                     <div class="filter-group"><input type="text" id="search-cust-phone" placeholder="Search by phone..." oninput="filterCustomers()"></div>
                 </div>
                 <div class="data-list" id="customer-list-container">
-                    <!-- Dynamic customer list cards -->
-                </div>
+                    </div>
             </section>
 
-            <!-- ====== MEMBERSHIPS VIEW ====== -->
             <section id="view-memberships" class="view-section">
                 <div class="page-header">
                     <h2>Memberships</h2>
@@ -219,14 +213,12 @@
                 </div>
 
                 <div class="data-list" id="membership-list-container">
-                    <!-- Dynamic membership list cards -->
-                </div>
+                    </div>
             </section>
 
         </div>
     </div>
 
-    <!-- ====== CUSTOMER ADD / EDIT MODAL ====== -->
     <div id="customerModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -256,7 +248,6 @@
         </div>
     </div>
 
-    <!-- ====== MEMBERSHIP ADD / EDIT MODAL ====== -->
     <div id="membershipModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -273,7 +264,6 @@
                     <div id="search-suggestions" class="search-results-box"></div>
                 </div>
 
-                <!-- Display read-only name when editing membership -->
                 <div class="form-group" id="mem-edit-name-display" style="display: none;">
                     <label>Customer Name</label>
                     <input type="text" id="mem-readonly-name" class="form-control" readonly>
@@ -305,7 +295,6 @@
         </div>
     </div>
 
-    <!-- ====== LOGIC AND STORAGE SCRIPT ====== -->
     <script>
         let customers = JSON.parse(localStorage.getItem('mcfc_customers')) || [];
         let memberships = JSON.parse(localStorage.getItem('mcfc_memberships')) || [];
@@ -543,11 +532,15 @@
                 const customer = customers.find(c => c.id === custId);
                 if(!customer) { alert("Please select a valid customer from search!"); return; }
 
+                // Wenascoma 2: Parana membership eka thiyenawanam eka filter karala nathi karala dagnnawa aluth eka danna kalin
+                memberships = memberships.filter(m => m.customerUniqueId !== customer.id);
+
                 const newMem = {
                     id: 'MEM-' + Math.floor(1000 + Math.random() * 9000),
                     customerUniqueId: customer.id,
                     customerName: `${customer.fname} ${customer.lname}`,
                     customerPhoto: customer.photo || '',
+                    customerPhone: customer.phone, // Message yawanna save karagannawa
                     type: document.getElementById('mem-type').value,
                     startDate: document.getElementById('mem-start-date').value,
                     endDate: document.getElementById('mem-end-date').value,
@@ -558,17 +551,14 @@
                 };
                 memberships.push(newMem);
             }
-
             localStorage.setItem('mcfc_memberships', JSON.stringify(memberships));
             closeModal('membershipModal');
             renderMemberships(memberships);
-            updateDashboard();
         }
 
         function editMembership(id) {
-            const m = memberships.find(mem => mem.id == id);
+            const m = memberships.find(mem => mem.id === id);
             if (!m) return;
-
             document.getElementById('mem-modal-title').innerText = "Edit Membership Details";
             document.getElementById('mem-btn-text').innerText = "Update Membership";
             document.getElementById('mem-edit-id').value = m.id;
@@ -582,84 +572,134 @@
             document.getElementById('mem-start-date').value = m.startDate;
             document.getElementById('mem-end-date').value = m.endDate;
             document.getElementById('mem-amount').value = m.amount;
-            document.getElementById('mem-payment').value = m.payment || 'Cash';
+            document.getElementById('mem-payment').value = m.payment;
             document.getElementById('mem-notes').value = m.notes || '';
-
             openModal('membershipModal');
         }
 
         function deleteMembership(id) {
-            if (confirm("Are you sure you want to delete this membership?")) {
-                memberships = memberships.filter(m => m.id != id);
+            if (confirm("Are you sure you want to delete this membership record?")) {
+                memberships = memberships.filter(m => m.id !== id);
                 localStorage.setItem('mcfc_memberships', JSON.stringify(memberships));
                 renderMemberships(memberships);
-                updateDashboard();
             }
+        }
+
+        // Wenascoma 1: WhatsApp automated message helper logic
+        function sendRenewMessage(id) {
+            const m = memberships.find(mem => mem.id === id);
+            if(!m) return;
+
+            // Customer find karagannawa custom notification hadanna
+            const customer = customers.find(c => c.id === m.customerUniqueId);
+            const targetPhone = customer && customer.whatsapp ? customer.whatsapp : (m.customerPhone || '');
+            
+            const message = `Hello ${m.customerName},\n\nYour Muscle Choice Fitness Center membership (${m.type}) has expired on ${m.endDate}.\n\nPlease visit the gym center to renew your membership.\nThank you!`;
+            const encodedMessage = encodeURIComponent(message);
+            
+            // Oyage WhatsApp ekata message eka text ekak widiyata open wenawa
+            window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
         }
 
         function renderMemberships(list) {
             const container = document.getElementById('membership-list-container');
             container.innerHTML = '';
+            
+            const todayStr = new Date().toISOString().split('T')[0];
+
             list.forEach(m => {
+                const isExpired = m.endDate < todayStr;
+                const statusBadge = isExpired 
+                    ? `<span style="color: #ff4d4d; font-weight: bold;">[EXPIRED]</span>` 
+                    : `<span style="color: #4ade80; font-weight: bold;">[ACTIVE]</span>`;
+
                 const imgTag = m.customerPhoto ? `<img src="${m.customerPhoto}">` : `<img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='gray'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>">`;
+                
+                // Expired nam pamanak WhatsApp share button eka hadanawa
+                const whatsappBtn = isExpired 
+                    ? `<button class="btn-sm btn-whatsapp" onclick="sendRenewMessage('${m.id}')">Send Renew Message</button>` 
+                    : '';
+
                 container.innerHTML += `
-                    <div class="data-card">
+                    <div class="data-card" style="${isExpired ? 'border-color: var(--danger-color);' : ''}">
                         ${imgTag}
                         <div class="card-details">
-                            <h4 class="purple-title">${m.customerName}</h4>
-                            <p><b>Membership ID:</b> ${m.id}</p>
-                            <p><b>Membership Type:</b> ${m.type}</p>
-                            <p><b>Start Date:</b> ${m.startDate}</p>
-                            <p><b>End Date:</b> ${m.endDate}</p>
+                            <h4 class="blue-title">${m.customerName} ${statusBadge}</h4>
+                            <p><span>Mem ID:</span> ${m.id} | <span>Cust ID:</span> ${m.customerUniqueId}</p>
+                            <p><span>Type:</span> <b>${m.type}</b></p>
+                            <p><span>Duration:</span> ${m.startDate} <b>to</b> ${m.endDate}</p>
+                            <p><span>Amount:</span> LKR ${m.amount.toLocaleString()} (${m.payment})</p>
+                            <p><span>Notes:</span> ${m.notes || 'None'}</p>
                             <div class="card-actions">
                                 <button class="btn-sm btn-edit" onclick="editMembership('${m.id}')">Edit</button>
                                 <button class="btn-sm btn-delete" onclick="deleteMembership('${m.id}')">Delete</button>
+                                ${whatsappBtn}
                             </div>
                         </div>
                     </div>`;
             });
         }
 
+        // Filtering Memberships
         function filterMembershipsByDate() {
             const startVal = document.getElementById('filter-mem-start').value;
             const endVal = document.getElementById('filter-mem-end').value;
-            let filtered = memberships;
-            if (startVal) filtered = filtered.filter(m => m.startDate >= startVal);
-            if (endVal) filtered = filtered.filter(m => m.endDate <= endVal);
+            
+            if(!startVal || !endVal) {
+                alert("Please select both Start and End dates to filter!");
+                return;
+            }
+
+            const filtered = memberships.filter(m => m.startDate >= startVal && m.endDate <= endVal);
             renderMemberships(filtered);
         }
 
         function filterExpiredMemberships() {
             const todayStr = new Date().toISOString().split('T')[0];
-            const expired = memberships.filter(m => m.endDate < todayStr);
-            renderMemberships(expired);
+            const filtered = memberships.filter(m => m.endDate < todayStr);
+            renderMemberships(filtered);
         }
 
-        // Dashboard Live Updates
+        // Dashboard Calculation Logic
         function updateDashboard() {
             const todayStr = new Date().toISOString().split('T')[0];
-            const thisMonthStr = todayStr.substring(0, 7);
+            const thisMonthPrefix = todayStr.substring(0, 7); // Format: YYYY-MM
 
+            // 1. New Customers Calculations
             const todayCust = customers.filter(c => c.dateAdded === todayStr).length;
-            const todayMems = memberships.filter(m => m.dateAdded === todayStr);
-            const todayRev = todayMems.reduce((sum, m) => sum + m.amount, 0);
+            const monthCust = customers.filter(c => c.dateAdded && c.dateAdded.startsWith(thisMonthPrefix)).length;
 
-            const monthCust = customers.filter(c => c.dateAdded.startsWith(thisMonthStr)).length;
-            const monthMems = memberships.filter(m => m.dateAdded.startsWith(thisMonthStr));
-            const monthRev = monthMems.reduce((sum, m) => sum + m.amount, 0);
+            // 2. Memberships & Revenue Calculations
+            let todayMemCount = 0;
+            let todayRevSum = 0;
+            let monthMemCount = 0;
+            let monthRevSum = 0;
 
+            memberships.forEach(m => {
+                if(m.dateAdded === todayStr) {
+                    todayMemCount++;
+                    todayRevSum += m.amount;
+                }
+                if(m.dateAdded && m.dateAdded.startsWith(thisMonthPrefix)) {
+                    monthMemCount++;
+                    monthRevSum += m.amount;
+                }
+            });
+
+            // 3. Update DOM Elements
             document.getElementById('dash-today-cust').innerText = todayCust;
-            document.getElementById('dash-today-mem').innerText = todayMems.length;
-            document.getElementById('dash-today-rev').innerText = todayRev.toLocaleString();
-            
+            document.getElementById('dash-today-mem').innerText = todayMemCount;
+            document.getElementById('dash-today-rev').innerText = todayRevSum.toLocaleString();
+
             document.getElementById('dash-month-cust').innerText = monthCust;
-            document.getElementById('dash-month-mem').innerText = monthMems.length;
-            document.getElementById('dash-month-rev').innerText = monthRev.toLocaleString();
+            document.getElementById('dash-month-mem').innerText = monthMemCount;
+            document.getElementById('dash-month-rev').innerText = monthRevSum.toLocaleString();
 
             document.getElementById('dash-total-cust').innerText = customers.length;
             document.getElementById('dash-total-mem').innerText = memberships.length;
         }
 
+        // System Initialization
         function initSystem() {
             renderCustomers(customers);
             renderMemberships(memberships);
