@@ -88,7 +88,7 @@
         .search-box input, .search-box select { padding: 10px; background-color: #2a2a2a; border: 1px solid var(--border-color); color: white; border-radius: 6px; width: 100%; }
         
         .btn-filter { background-color: #2a2a2a; color: white; border: 1px solid var(--border-color); padding: 10px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; height: 40px; }
-        .btn-filter:hover { background-color: #3a3a3a; }
+        .btn-filter:hover { background-color: #333; }
         .btn-danger-block { width: 100%; padding: 12px; background-color: var(--danger-color); color: white; border: none; border-radius: 6px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 10px; text-align: center; }
         .btn-danger-block:hover { background-color: #b91c1c; }
 
@@ -120,7 +120,7 @@
             border: 1px solid var(--border-color); border-radius: 0 0 6px 6px; max-height: 150px; 
             overflow-y: auto; z-index: 10; display: none;
         }
-        .search-item { padding: 10px; cursor: pointer; font-size: 14px; border-bottom: 1px solid #333; }
+        .search-item { padding: 10px; cursor: pointer; font-size: 14px; border-bottom: 1px solid #333; text-align: left; }
         .search-item:hover { background: var(--accent-color); color: white; }
     </style>
 </head>
@@ -206,7 +206,10 @@
                             <input type="date" id="filter-mem-end">
                         </div>
                     </div>
-                    <button class="btn-filter" style="margin-top: 10px;" onclick="filterMembershipsByDate()">Filter</button>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-filter" style="margin-top: 10px;" onclick="filterMembershipsByDate()">Filter</button>
+                        <button class="btn-filter" style="margin-top: 10px; background-color: #444;" onclick="resetMembershipFilter()">Reset</button>
+                    </div>
                     <button class="btn-danger-block" onclick="filterExpiredMemberships()">All Expired Memberships</button>
                 </div>
 
@@ -346,7 +349,6 @@
             });
         }
 
-        // Global Scope එකට Functions සම්බන්ධ කිරීම (Scope issue එක විසඳීම)
         window.handleLogin = function() {
             const email = document.getElementById('login-email').value.trim();
             const pass = document.getElementById('login-pass').value;
@@ -560,4 +562,140 @@
                 type: document.getElementById('mem-type').value,
                 startDate: document.getElementById('mem-start-date').value,
                 endDate: document.getElementById('mem-end-date').value,
-                amount: parseFloat(document.getElementById('
+                amount: parseFloat(document.getElementById('mem-amount').value),
+                payment: document.getElementById('mem-payment').value,
+                notes: document.getElementById('mem-notes').value
+            };
+
+            if (editId) {
+                update(ref(db, `memberships/${editId}`), membershipData).then(() => {
+                    closeModal('membershipModal');
+                }).catch(err => alert(err.message));
+            } else {
+                const custId = document.getElementById('mem-selected-cust-id').value;
+                if (!custId) {
+                    alert("Please select a customer first!");
+                    return;
+                }
+                membershipData.customerId = custId;
+                membershipData.dateAdded = new Date().toISOString().split('T')[0];
+
+                const newMembershipRef = push(ref(db, 'memberships'));
+                set(newMembershipRef, membershipData)
+                .then(() => { closeModal('membershipModal'); })
+                .catch(err => alert("Error saving data: " + err.message));
+            }
+        }
+
+        window.editMembership = function(id) {
+            const m = memberships.find(mem => mem.id === id);
+            if (!m) return;
+            const c = customers.find(cust => cust.id === m.customerId);
+            
+            document.getElementById('mem-modal-title').innerText = "Edit Membership Details";
+            document.getElementById('mem-btn-text').innerText = "Update Membership";
+            document.getElementById('mem-edit-id').value = m.id;
+            
+            document.getElementById('mem-search-group').style.display = "none";
+            document.getElementById('mem-edit-name-display').style.display = "block";
+            document.getElementById('mem-readonly-name').value = c ? `${c.fname} ${c.lname}` : 'Unknown Customer';
+
+            document.getElementById('mem-type').value = m.type;
+            document.getElementById('mem-start-date').value = m.startDate;
+            document.getElementById('mem-end-date').value = m.endDate;
+            document.getElementById('mem-amount').value = m.amount;
+            document.getElementById('mem-payment').value = m.payment;
+            document.getElementById('mem-notes').value = m.notes || '';
+            
+            openModal('membershipModal');
+        }
+
+        window.deleteMembership = function(id) {
+            if (confirm("Are you sure you want to delete this membership?")) {
+                remove(ref(db, `memberships/${id}`)).catch(err => alert(err.message));
+            }
+        }
+
+        function renderMemberships(list) {
+            const container = document.getElementById('membership-list-container');
+            container.innerHTML = '';
+            list.forEach(m => {
+                const c = customers.find(cust => cust.id === m.customerId);
+                const name = c ? `${c.fname} ${c.lname}` : "Unknown Customer";
+                const phone = c ? c.phone : "N/A";
+                
+                container.innerHTML += `
+                    <div class="data-card">
+                        <div class="card-details">
+                            <h4>${name}</h4>
+                            <p><span>Phone:</span> ${phone}</p>
+                            <p><span>Type:</span> <b>${m.type}</b></p>
+                            <p><span>Duration:</span> ${m.startDate} to ${m.endDate}</p>
+                            <p><span>Amount:</span> LKR ${m.amount} (${m.payment})</p>
+                            <p><span>Notes:</span> ${m.notes || 'N/A'}</p>
+                            <div class="card-actions">
+                                <button class="btn-sm btn-edit" onclick="editMembership('${m.id}')">Edit</button>
+                                <button class="btn-sm btn-delete" onclick="deleteMembership('${m.id}')">Delete</button>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        window.filterMembershipsByDate = function() {
+            const startQ = document.getElementById('filter-mem-start').value;
+            const endQ = document.getElementById('filter-mem-end').value;
+            if(!startQ || !endQ) { alert("Please choose both start and end date filters."); return; }
+            
+            const filtered = memberships.filter(m => m.startDate >= startQ && m.endDate <= endQ);
+            renderMemberships(filtered);
+        }
+
+        window.resetMembershipFilter = function() {
+            document.getElementById('filter-mem-start').value = '';
+            document.getElementById('filter-mem-end').value = '';
+            renderMemberships(memberships);
+        }
+
+        window.filterExpiredMemberships = function() {
+            const today = new Date().toISOString().split('T')[0];
+            const filtered = memberships.filter(m => m.endDate < today);
+            renderMemberships(filtered);
+        }
+
+        function updateDashboard() {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const currentMonthStr = todayStr.substring(0, 7); // "YYYY-MM"
+
+            let todayCust = 0, monthCust = 0, totalCust = customers.length;
+            let todayMem = 0, monthMem = 0, totalMem = memberships.length;
+            let todayRev = 0, monthRev = 0;
+
+            customers.forEach(c => {
+                if(c.dateAdded === todayStr) todayCust++;
+                if(c.dateAdded && c.dateAdded.startsWith(currentMonthStr)) monthCust++;
+            });
+
+            memberships.forEach(m => {
+                if(m.dateAdded === todayStr) {
+                    todayMem++;
+                    todayRev += m.amount || 0;
+                }
+                if(m.dateAdded && m.dateAdded.startsWith(currentMonthStr)) {
+                    monthMem++;
+                    monthRev += m.amount || 0;
+                }
+            });
+
+            document.getElementById('dash-today-cust').innerText = todayCust;
+            document.getElementById('dash-today-mem').innerText = todayMem;
+            document.getElementById('dash-today-rev').innerText = todayRev.toLocaleString();
+            document.getElementById('dash-month-cust').innerText = monthCust;
+            document.getElementById('dash-month-mem').innerText = monthMem;
+            document.getElementById('dash-month-rev').innerText = monthRev.toLocaleString();
+            document.getElementById('dash-total-cust').innerText = totalCust;
+            document.getElementById('dash-total-mem').innerText = totalMem;
+        }
+    </script>
+</body>
+</html>
